@@ -20,6 +20,9 @@
 ;                := "\""<texto> "\""
 ;                   texto-lit (txt)
 
+;                := '\''<caracter> '\''
+;                   caracter-lit (crc)
+
 ;                := <identificador>
 ;                   var-exp (id)
 
@@ -33,3 +36,53 @@
 ;                   rec-exp (proc-nombres idss exps cuerpodecrec)
 
 ;******************************************************************************************
+
+;Especificación Léxica
+
+(define spec-lexica
+'((white-sp
+   (whitespace) skip)
+  
+  (comentario
+   ("%" (arbno (not #\newline))) skip)
+
+  (identificador
+   ("@" letter (arbno (or letter digit "?"))) symbol)
+  
+  (texto
+   ((or letter "-") (arbno (or letter digit "-" ":"))) string)
+
+  (caracter
+   ((or letter "-") (arbno (or letter digit "-" ":"))) string)
+  
+  (numero
+   (digit (arbno digit)) number)
+  
+  (numero
+   ("-" digit (arbno digit)) number)
+
+  (numero
+   (digit (arbno digit) "." (arbno digit)) number)
+
+  (numero
+   ("-" digit (arbno digit) "." (arbno digit)) number)
+
+  )
+)
+
+;Especificación Sintáctica (gramática)
+
+(define spec-gramatica
+  '((programa (expresion) un-programa)
+    
+    (expresion (numero) numero-lit)
+    (expresion ("\""texto"\"") texto-lit)
+    (expresion ("\''caracter'\'") caracter-lit)
+    (expression ("false") false-exp)
+    (expression ("true") true-exp)
+    (expresion (identificador) var-exp)
+    (expresion ("var" "(" (separated-list identificador "=" expresion ",") ")" "{" expresion "}") variableMutable-exp)
+    (expresion ("const" "(" (separated-list identificador "=" expresion ",") ")" "{" expresion "}") variableNoMutable-exp)
+    (expresion ("rec" (arbno identificador "(" (separated-list identificador ";") ")" "=" expresion) "en" expresion) rec-exp)
+    
+    ))
