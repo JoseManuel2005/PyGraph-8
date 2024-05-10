@@ -90,8 +90,8 @@
     (expresion ("var" "(" (separated-list identificador "=" expresion ",") ")" "{" expresion "}") variableMutable-exp)
     (expresion ("const" "(" (separated-list identificador "=" expresion ",") ")" "{" expresion "}") variableNoMutable-exp)
     (expresion ("rec" (arbno identificador "(" (separated-list identificador ";") ")" "=" expresion) "en" expresion "finRec") rec-exp)
-    ;(expression ("false") false-exp)
-    ;(expression ("true") true-exp)
+    (expresion ("false") false-exp)
+    (expresion ("true") true-exp)
     
     ))
 
@@ -257,6 +257,10 @@
                   (evaluar-expresion cuerpodecrec
                                    (extend-env-recursively
                                      proc-nombres idss exps env)))
+      (true-exp ()
+                #t)
+      (false-exp ()
+                 #f)
       )))
 
 
