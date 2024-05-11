@@ -43,6 +43,22 @@
 ;                ::= rec {<identificador> (<identificador>* (;)) = <expresion>}* en <expresion>
 ;                   rec-exp (proc-nombres idss exps cuerpodecrec)
 
+;                := (<expresion> <primitiva-binaria> <expresion>)
+;                   primapp-bin-exp (exp1 prim-binaria exp2)
+
+;                := <primitiva-unaria> (<expresion>)
+;                   primapp-un-exp (prim-unaria exp)
+
+;    <primitiva-binaria> :=  + (primitiva-suma)
+;                        :=  ~ (primitiva-resta)
+;                        :=  / (primitiva-div)
+;                        :=  * (primitiva-multi)
+;                        :=  concat (primitiva-concat)
+
+;    <primitiva-unaria>  :=  longitud (primitiva-longitud)
+;                        :=  add1 (primitiva-add1)
+;                        :=  sub1 (primitiva-sub1)
+
 ;******************************************************************************************
 
 ;Especificación Léxica
@@ -92,7 +108,19 @@
     (expresion ("rec" (arbno identificador "(" (separated-list identificador ";") ")" "=" expresion) "en" expresion "finRec") rec-exp)
     (expresion ("false") false-exp)
     (expresion ("true") true-exp)
-    
+
+    (expresion ("(" expresion primitiva-binaria expresion ")") primapp-bin-exp)
+    (expresion (primitiva-unaria "(" expresion ")") primapp-un-exp)
+
+    (primitiva-binaria ("+") primitiva-suma)
+    (primitiva-binaria ("~") primitiva-resta)
+    (primitiva-binaria ("/") primitiva-div)
+    (primitiva-binaria ("*") primitiva-multi)
+    (primitiva-binaria ("concat") primitiva-concat)
+
+    (primitiva-unaria ("longitud") primitiva-longitud)
+    (primitiva-unaria ("add1") primitiva-add1)
+    (primitiva-unaria ("sub1") primitiva-sub1)
     ))
 
 ;datatypes con SLLGEN
@@ -261,8 +289,43 @@
                 #t)
       (false-exp ()
                  #f)
+
+      (primapp-bin-exp (exp1 prim-binaria exp2)
+                       (let(
+                            (operando1 (evaluar-expresion exp1 env))
+                            (operando2 (evaluar-expresion exp2 env))
+                            )
+                         (evaluar-primitiva-binaria prim-binaria operando1 operando2)
+                         ))
+      (primapp-un-exp (prim-unaria exp)
+                      (let (
+                            (arg (evaluar-expresion exp env))
+                            )
+                           (evaluar-primitiva-unaria  prim-unaria arg)
+                           ))
       )))
 
+;prim(primitiva-binaria) rand1(texto o numero) rand2(texto o numero) -> texto o numero
+;Proposito: Aplica la operacion binaria dada los dos operandos y retorna el resultado dde la operacion segun sea el caso que se aplique
+(define evaluar-primitiva-binaria
+  (lambda(prim rand1 rand2)
+    (cases primitiva-binaria prim
+      (primitiva-suma () (+ rand1 rand2))
+      (primitiva-resta () (- rand1 rand2))
+      (primitiva-div () (/ rand1 rand2))
+      (primitiva-multi () (* rand1 rand2))
+      (primitiva-concat () (string-append rand1 rand2))
+      )))
+
+;prim(primitiva-unaria) args(texto o numero) -> numero
+;Proposito: Aplica la primitiva unaria al operando dado y retorna el resultado de la operacion segun sea el caso que se aplique
+(define evaluar-primitiva-unaria
+  (lambda(prim args)
+    (cases primitiva-unaria prim
+      (primitiva-longitud () (string-length args))
+      (primitiva-add1 () (+ args 1))
+      (primitiva-sub1 () (- args 1))
+      )))
 
 
 ; funciones auxiliares para aplicar evaluar-expresion a cada elemento de una lista de operandos (expresiones)
