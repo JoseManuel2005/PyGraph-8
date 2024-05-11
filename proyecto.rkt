@@ -53,6 +53,7 @@
 ;                        :=  ~ (primitiva-resta)
 ;                        :=  / (primitiva-div)
 ;                        :=  * (primitiva-multi)
+;                        :=  % (primitiva-residuo)
 ;                        :=  concat (primitiva-concat)
 
 ;    <primitiva-unaria>  :=  longitud (primitiva-longitud)
@@ -116,6 +117,7 @@
     (primitiva-binaria ("~") primitiva-resta)
     (primitiva-binaria ("/") primitiva-div)
     (primitiva-binaria ("*") primitiva-multi)
+    (primitiva-binaria ("%") primitiva-residuo)
     (primitiva-binaria ("concat") primitiva-concat)
 
     (primitiva-unaria ("longitud") primitiva-longitud)
@@ -314,6 +316,7 @@
       (primitiva-resta () (- rand1 rand2))
       (primitiva-div () (/ rand1 rand2))
       (primitiva-multi () (* rand1 rand2))
+      (primitiva-residuo () (modulo rand1 rand2))
       (primitiva-concat () (string-append rand1 rand2))
       )))
 
@@ -341,3 +344,11 @@
 (define evaluar-operando
   (lambda (operando env)
     (evaluar-expresion operando env)))
+
+;int, int -> numero
+;proposito: Calcula el residuo de la division de los numeros a entre b
+(define residuo
+  (lambda(a b)
+    (if (< a b)
+        a
+        (modulo (- a b) b))))
