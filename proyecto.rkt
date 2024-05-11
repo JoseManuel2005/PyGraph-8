@@ -49,11 +49,14 @@
 ;                := <primitiva-unaria> (<expresion>)
 ;                   primapp-un-exp (prim-unaria exp)
 
-;                := lista [{expresion}* (,)]
+;                := lista [{<expresion>}* (,)]
 ;                := lista-exp (exp)
 
-;                := vector [{expresion}* (,)]
+;                := vector [{<expresion>}* (,)]
 ;                := vector-exp (exp)
+
+;                := registro { {<identificador>} = <expresion>}+ (;)}
+;                := registro-exp (id exp)
 
 ;    <primitiva-binaria> :=  + (primitiva-suma)
 ;                        :=  ~ (primitiva-resta)
@@ -125,6 +128,7 @@
 
     (expresion ("lista" "[" (separated-list expresion ",") "]") lista-exp)
     (expresion ("vector" "[" (separated-list expresion ",") "]") vector-exp)
+    (expresion ("registro" "{" (separated-list identificador "=" expresion ";") "}") registro-exp)
 
     (primitiva-binaria ("+") primitiva-suma)
     (primitiva-binaria ("~") primitiva-resta)
@@ -326,6 +330,10 @@
       (vector-exp (exp)
                  (list->vector(map(lambda(expr) (evaluar-expresion expr env)) exp))
                  )
+
+      (registro-exp (id exp)
+                    exp
+                    )
       )))
 
 ;prim(primitiva-binaria) rand1(texto o numero) rand2(texto o numero) -> texto o numero
