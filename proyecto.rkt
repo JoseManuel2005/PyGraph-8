@@ -49,6 +49,9 @@
 ;                := <primitiva-unaria> (<expresion>)
 ;                   primapp-un-exp (prim-unaria exp)
 
+;                := lista [{expresion}* (,)]
+;                := lista-exp (exp)
+
 ;    <primitiva-binaria> :=  + (primitiva-suma)
 ;                        :=  ~ (primitiva-resta)
 ;                        :=  / (primitiva-div)
@@ -69,7 +72,7 @@
    (whitespace) skip)
   
   (comentario
-   ("%" (arbno (not #\newline))) skip)
+   ("//" (arbno (not #\newline))) skip)
 
   (identificador
    ("@" letter (arbno (or letter digit "?"))) symbol)
@@ -101,17 +104,23 @@
   '((programa (expresion) un-programa)
     
     (expresion (numero) numero-lit)
+
     (expresion ("\""texto"\"") texto-lit)
     ;(expresion ("\'"caracter"\'") caracter-lit)
+
     (expresion (identificador) var-exp)
+
     (expresion ("var" "(" (separated-list identificador "=" expresion ",") ")" "{" expresion "}") variableMutable-exp)
     (expresion ("const" "(" (separated-list identificador "=" expresion ",") ")" "{" expresion "}") variableNoMutable-exp)
     (expresion ("rec" (arbno identificador "(" (separated-list identificador ";") ")" "=" expresion) "en" expresion "finRec") rec-exp)
+
     (expresion ("false") false-exp)
     (expresion ("true") true-exp)
 
     (expresion ("(" expresion primitiva-binaria expresion ")") primapp-bin-exp)
     (expresion (primitiva-unaria "(" expresion ")") primapp-un-exp)
+
+    (expresion ("lista" "[" (separated-list expresion ",") "]") lista-exp)
 
     (primitiva-binaria ("+") primitiva-suma)
     (primitiva-binaria ("~") primitiva-resta)
@@ -305,6 +314,10 @@
                             )
                            (evaluar-primitiva-unaria  prim-unaria arg)
                            ))
+
+      (lista-exp (exp)
+                 (map(lambda(expr) (evaluar-expresion expr env)) exp)
+                 )
       )))
 
 ;prim(primitiva-binaria) rand1(texto o numero) rand2(texto o numero) -> texto o numero
