@@ -52,6 +52,9 @@
 ;                := lista [{expresion}* (,)]
 ;                := lista-exp (exp)
 
+;                := vector [{expresion}* (,)]
+;                := vector-exp (exp)
+
 ;    <primitiva-binaria> :=  + (primitiva-suma)
 ;                        :=  ~ (primitiva-resta)
 ;                        :=  / (primitiva-div)
@@ -121,6 +124,7 @@
     (expresion (primitiva-unaria "(" expresion ")") primapp-un-exp)
 
     (expresion ("lista" "[" (separated-list expresion ",") "]") lista-exp)
+    (expresion ("vector" "[" (separated-list expresion ",") "]") vector-exp)
 
     (primitiva-binaria ("+") primitiva-suma)
     (primitiva-binaria ("~") primitiva-resta)
@@ -317,6 +321,10 @@
 
       (lista-exp (exp)
                  (map(lambda(expr) (evaluar-expresion expr env)) exp)
+                 )
+
+      (vector-exp (exp)
+                 (list->vector(map(lambda(expr) (evaluar-expresion expr env)) exp))
                  )
       )))
 
