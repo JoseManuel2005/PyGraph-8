@@ -87,7 +87,7 @@
    ((or letter "-") (arbno (or letter digit "-" ":"))) string)
 
   ;(caracter
-   ;((or letter "-") (arbno (or letter digit "-" ":"))) string)
+   ;(letter) string)
   
   (numero
    (digit (arbno digit)) number)
@@ -112,7 +112,7 @@
     (expresion (numero) numero-lit)
 
     (expresion ("\""texto"\"") texto-lit)
-    ;(expresion ("\'"caracter"\'") caracter-lit)
+    ;(expresion ("'" caracter "'") caracter-lit)
 
     (expresion (identificador) var-exp)
 
@@ -345,7 +345,7 @@
       (primitiva-resta () (- rand1 rand2))
       (primitiva-div () (/ rand1 rand2))
       (primitiva-multi () (* rand1 rand2))
-      (primitiva-residuo () (modulo rand1 rand2))
+      (primitiva-residuo () (remainder rand1 rand2))
       (primitiva-concat () (string-append rand1 rand2))
       )))
 
@@ -373,11 +373,3 @@
 (define evaluar-operando
   (lambda (operando env)
     (evaluar-expresion operando env)))
-
-;int, int -> numero
-;proposito: Calcula el residuo de la division de los numeros a entre b
-(define residuo
-  (lambda(a b)
-    (if (< a b)
-        a
-        (modulo (- a b) b))))
