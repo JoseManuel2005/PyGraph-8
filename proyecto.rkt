@@ -61,6 +61,9 @@
 ;                := <predicado-primitivo> ( <expresion> , <expresion>)
 ;                := pred-prim-exp (exp1 exp2)
 
+;                := <operacion-booleana> ( <predicado-primitivo> , <predicado-primitivo>)
+;                := oper−bin−bool (exp1 exp2)
+
 ;    <primitiva-binaria> :=  + (primitiva-suma)
 ;                        :=  ~ (primitiva-resta)
 ;                        :=  / (primitiva-div)
@@ -78,6 +81,9 @@
 ;                          := >= (mayorIgual-que)
 ;                          := == (igual-que)
 ;                          := <> (diferente-de)
+
+;    <operacion-booleana> := and (and-exp)
+;                         := or (or-exp)
 
 ;******************************************************************************************
 
@@ -140,6 +146,7 @@
     (expresion ("registro" "{" identificador "=" expresion (arbno ";" identificador "=" expresion)  "}") registro-exp)
 
     (expresion(predicado-primitivo "(" expresion "," expresion ")") pred-prim-exp)
+    (expresion(operacion-booleana "(" expresion "," expresion ")") oper−bin−bool)
 
     (primitiva-binaria ("+") primitiva-suma)
     (primitiva-binaria ("~") primitiva-resta)
@@ -158,6 +165,9 @@
     (predicado-primitivo (">=") mayorIgual-que)
     (predicado-primitivo ("==") igual-que)
     (predicado-primitivo ("<>") diferente-de)
+
+    (operacion-booleana("and") and-exp)
+    (operacion-booleana("or") or-exp)
     ))
 
 ;datatypes con SLLGEN
@@ -361,6 +371,10 @@
                          )
                         (evaluar-predicado-primitivo prim expr1 expr2)
                          ))
+
+      (oper−bin−bool(operacion exp1 exp2)
+                    (evaluar-operacion-booleana operacion (evaluar-expresion exp1 env) (evaluar-expresion exp2 env))
+                    )
       )))
 
 ;prim(primitiva-binaria) rand1(texto o numero) rand2(texto o numero) -> texto o numero
@@ -397,6 +411,15 @@
       (mayorIgual-que () (>= exp1 exp2))
       (igual-que () (equal? exp1 exp2))
       (diferente-de () (not(equal? exp1 exp2)))
+      )))
+
+;prim(predicado-primitivo) exp1(numero) exp2(numero) -> bool
+;Proposito: Aplica el predicado primitivo al operando dado y retorna el resultado de la operacion segun sea el caso que se aplique
+(define evaluar-operacion-booleana
+  (lambda(ope exp1 exp2)
+    (cases operacion-booleana ope
+      (and-exp () (and exp1 exp2))
+      (or-exp () (or exp1 exp2))
       )))
 
 
