@@ -86,8 +86,8 @@
   (texto
    ((or letter "-") (arbno (or letter digit "-" ":"))) string)
 
-  ;(caracter
-   ;(letter) string)
+  (caracter
+    ("'" letter) symbol)
   
   (numero
    (digit (arbno digit)) number)
@@ -112,8 +112,7 @@
     (expresion (numero) numero-lit)
 
     (expresion ("\""texto"\"") texto-lit)
-    ;(expresion ("'" caracter "'") caracter-lit)
-
+    (expresion (caracter) caracter-lit)
     (expresion (identificador) var-exp)
 
     (expresion ("var" "(" (separated-list identificador "=" expresion ",") ")" "{" expresion "}") variableMutable-exp)
@@ -290,6 +289,7 @@
       (numero-lit (n) n)
       (var-exp (id) (buscar-variable env id))
       (texto-lit (text) text)
+      (caracter-lit (car) car)
       (variableMutable-exp (ids exps cuerpo)
                          (let ((args(evaluar-operandos exps env)))
                            (evaluar-expresion cuerpo
