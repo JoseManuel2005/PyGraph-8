@@ -58,6 +58,9 @@
 ;                := registro { {<identificador>} = <expresion>}+ (;)}
 ;                := registro-exp (id exp)
 
+;                := <predicado-primitivo> ( <expresion> , <expresion>)
+;                := pred-prim-exp (exp1 exp2)
+
 ;    <primitiva-binaria> :=  + (primitiva-suma)
 ;                        :=  ~ (primitiva-resta)
 ;                        :=  / (primitiva-div)
@@ -68,6 +71,13 @@
 ;    <primitiva-unaria>  :=  longitud (primitiva-longitud)
 ;                        :=  add1 (primitiva-add1)
 ;                        :=  sub1 (primitiva-sub1)
+
+;    <predicado-primitivo> := < (menor-que)
+;                          := > (mayor-que)
+;                          := <= (menorIgual-que)
+;                          := >= (mayorIgual-que)
+;                          := == (igual-que)
+;                          := <> (diferente-de)
 
 ;******************************************************************************************
 
@@ -84,7 +94,7 @@
    ("@" letter (arbno (or letter digit "?"))) symbol)
   
   (texto
-   ((or letter "-") (arbno (or letter digit "-" ":"))) string)
+   ((or letter "-") (arbno (or letter digit "-" ":" "?"))) string)
 
   (caracter
     ("'" letter) symbol)
@@ -129,6 +139,8 @@
     (expresion ("vector" "[" (separated-list expresion ",") "]") vector-exp)
     (expresion ("registro" "{" identificador "=" expresion (arbno ";" identificador "=" expresion)  "}") registro-exp)
 
+    (expresion(predicado-primitivo "(" expresion "," expresion ")") pred-prim-exp)
+
     (primitiva-binaria ("+") primitiva-suma)
     (primitiva-binaria ("~") primitiva-resta)
     (primitiva-binaria ("/") primitiva-div)
@@ -139,6 +151,13 @@
     (primitiva-unaria ("longitud") primitiva-longitud)
     (primitiva-unaria ("add1") primitiva-add1)
     (primitiva-unaria ("sub1") primitiva-sub1)
+
+    (predicado-primitivo ("<") menor-que)
+    (predicado-primitivo (">") mayor-que)
+    (predicado-primitivo ("<=") menorIgual-que)
+    (predicado-primitivo (">=") mayorIgual-que)
+    (predicado-primitivo ("==") igual-que)
+    (predicado-primitivo ("<>") diferente-de)
     ))
 
 ;datatypes con SLLGEN
@@ -334,6 +353,14 @@
       (registro-exp (id exp ids exps)
                     exp
                     )
+
+      (pred-prim-exp(prim exp1 exp2)
+                    (let(
+                         (expr1 (evaluar-expresion exp1 env))
+                         (expr2 (evaluar-expresion exp2 env))
+                         )
+                        (evaluar-predicado-primitivo prim expr1 expr2)
+                         ))
       )))
 
 ;prim(primitiva-binaria) rand1(texto o numero) rand2(texto o numero) -> texto o numero
@@ -357,6 +384,19 @@
       (primitiva-longitud () (string-length args))
       (primitiva-add1 () (+ args 1))
       (primitiva-sub1 () (- args 1))
+      )))
+
+;prim(predicado-primitivo) exp1(numero) exp2(numero) -> bool
+;Proposito: Aplica el predicado primitivo al operando dado y retorna el resultado de la operacion segun sea el caso que se aplique
+(define evaluar-predicado-primitivo
+  (lambda(prim exp1 exp2)
+    (cases predicado-primitivo prim
+      (menor-que () (< exp1 exp2))
+      (mayor-que () (> exp1 exp2))
+      (menorIgual-que () (<= exp1 exp2))
+      (mayorIgual-que () (>= exp1 exp2))
+      (igual-que () (equal? exp1 exp2))
+      (diferente-de () (not(equal? exp1 exp2)))
       )))
 
 
