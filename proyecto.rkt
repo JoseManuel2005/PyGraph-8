@@ -61,8 +61,11 @@
 ;                := <predicado-primitivo> ( <expresion> , <expresion>)
 ;                := pred-prim-exp (exp1 exp2)
 
-;                := <operacion-booleana> ( <predicado-primitivo> , <predicado-primitivo>)
+;                := <operacion-booleana> ( <expresion> , <expresion> )
 ;                := oper−bin−bool (exp1 exp2)
+
+;                := <operacion-unaria-booleana> (<expresion>)
+;                := oper−un−bool (exp)
 
 ;    <primitiva-binaria> :=  + (primitiva-suma)
 ;                        :=  ~ (primitiva-resta)
@@ -84,6 +87,8 @@
 
 ;    <operacion-booleana> := and (and-exp)
 ;                         := or (or-exp)
+
+;    <operacion-unaria-booleana> := not(not-exp)
 
 ;******************************************************************************************
 
@@ -147,6 +152,7 @@
 
     (expresion(predicado-primitivo "(" expresion "," expresion ")") pred-prim-exp)
     (expresion(operacion-booleana "(" expresion "," expresion ")") oper−bin−bool)
+    (expresion(operacion-unaria-booleana "(" expresion ")") oper−un−bool)
 
     (primitiva-binaria ("+") primitiva-suma)
     (primitiva-binaria ("~") primitiva-resta)
@@ -168,6 +174,7 @@
 
     (operacion-booleana("and") and-exp)
     (operacion-booleana("or") or-exp)
+    (operacion-unaria-booleana("not") not-exp)
     ))
 
 ;datatypes con SLLGEN
@@ -375,6 +382,10 @@
       (oper−bin−bool(operacion exp1 exp2)
                     (evaluar-operacion-booleana operacion (evaluar-expresion exp1 env) (evaluar-expresion exp2 env))
                     )
+
+      (oper−un−bool(oper exp)
+                   (evaluar-operacion-unaria-booleana oper (evaluar-expresion exp env))
+                   )
       )))
 
 ;prim(primitiva-binaria) rand1(texto o numero) rand2(texto o numero) -> texto o numero
@@ -413,8 +424,8 @@
       (diferente-de () (not(equal? exp1 exp2)))
       )))
 
-;prim(predicado-primitivo) exp1(numero) exp2(numero) -> bool
-;Proposito: Aplica el predicado primitivo al operando dado y retorna el resultado de la operacion segun sea el caso que se aplique
+;ope(operacion-booleana) exp1(expresion) exp2(expresion) -> bool
+;Proposito: Aplica la operacion and/or depende el caso segun lo que se pase en la exp1 y exp2
 (define evaluar-operacion-booleana
   (lambda(ope exp1 exp2)
     (cases operacion-booleana ope
@@ -422,6 +433,13 @@
       (or-exp () (or exp1 exp2))
       )))
 
+;ope(operacion-booleana) exp(expresion) -> bool
+;Proposito: Aplica la operacion not (negacion) a lo que sea que retorne exp ya evaluado
+(define evaluar-operacion-unaria-booleana
+  (lambda(ope exp)
+    (cases operacion-unaria-booleana ope
+      (not-exp () (not exp))
+      )))
 
 ; funciones auxiliares para aplicar evaluar-expresion a cada elemento de una lista de operandos (expresiones)
 
