@@ -127,7 +127,7 @@
 
     (expresion ("lista" "[" (separated-list expresion ",") "]") lista-exp)
     (expresion ("vector" "[" (separated-list expresion ",") "]") vector-exp)
-    (expresion ("registro" "{" (separated-list identificador "=" expresion ";") "}") registro-exp)
+    (expresion ("registro" "{" identificador "=" expresion (arbno ";" identificador "=" expresion)  "}") registro-exp)
 
     (primitiva-binaria ("+") primitiva-suma)
     (primitiva-binaria ("~") primitiva-resta)
@@ -331,7 +331,7 @@
                  (list->vector(map(lambda(expr) (evaluar-expresion expr env)) exp))
                  )
 
-      (registro-exp (id exp)
+      (registro-exp (id exp ids exps)
                     exp
                     )
       )))
