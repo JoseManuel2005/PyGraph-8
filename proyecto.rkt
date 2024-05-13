@@ -79,6 +79,7 @@
 ;                        :=  * (primitiva-multi)
 ;                        :=  % (primitiva-residuo)
 ;                        :=  concat (primitiva-concat)
+;                        :=  append (primitiva-append)
 
 ;    <primitiva-unaria>  :=  longitud (primitiva-longitud)
 ;                        :=  add1 (primitiva-add1)
@@ -196,6 +197,7 @@
     (operacion-unaria-booleana ("lista?") lista-validacion-exp)
     (operacion-unaria-booleana ("cabeza") cabeza-validacion-exp)
     (operacion-unaria-booleana ("resto") resto-validacion-exp)
+    (operacion-unaria-booleana ("vector?") vector-validacion-exp)
     ))
 
 ;datatypes con SLLGEN
@@ -485,6 +487,7 @@
       (lista-validacion-exp() (list? exp))
       (cabeza-validacion-exp() (car exp))
       (resto-validacion-exp() (cdr exp))
+      (vector-validacion-exp() (vector? exp))
       )))
 
 ; funciones auxiliares para aplicar evaluar-expresion a cada elemento de una lista de operandos (expresiones)
