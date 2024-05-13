@@ -174,6 +174,7 @@
     (primitiva-binaria ("*") primitiva-multi)
     (primitiva-binaria ("%") primitiva-residuo)
     (primitiva-binaria ("concat") primitiva-concat)
+    (primitiva-binaria ("append") primitiva-append)
 
     (primitiva-unaria ("longitud") primitiva-longitud)
     (primitiva-unaria ("add1") primitiva-add1)
@@ -435,6 +436,10 @@
       (primitiva-multi () (* rand1 rand2))
       (primitiva-residuo () (remainder rand1 rand2))
       (primitiva-concat () (string-append rand1 rand2))
+      (primitiva-append() (if (list? rand1)
+                              (append rand1 (list rand2))
+                              (list rand1 rand2)
+                              ))
       )))
 
 ;prim(primitiva-unaria) args(texto o numero) -> numero
