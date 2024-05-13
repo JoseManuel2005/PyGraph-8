@@ -308,7 +308,9 @@
 ;valor-verdad?: determina si un valor dado corresponde a un valor booleano falso o verdadero
 (define valor-verdad?
   (lambda (x)
-    (equal? #t x)))
+     (equal? (not #f) x) 
+    )
+  )
 
 ;datatype para los procedimientos
 (define-datatype procVal procVal?
