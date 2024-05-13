@@ -64,6 +64,12 @@
 ;                := registro { {<identificador>} = <expresion>}+ (;)}
 ;                := registro-exp (id exp)
 
+;                := ref-vector ( <expresion> , <expresion> )
+;                := set-vector-exp (vec pos)
+
+;                := set-vector ( <expresion> , <expresion> , <expresion> )
+;                := set-vector-exp (vec pos val)
+
 ;                := <predicado-primitivo> ( <expresion> , <expresion>)
 ;                := pred-prim-exp (exp1 exp2)
 
@@ -164,6 +170,9 @@
     (expresion ("lista" "[" (separated-list expresion ",") "]") lista-exp)
     (expresion ("vector" "[" (separated-list expresion ",") "]") vector-exp)
     (expresion ("registro" "{" identificador "=" expresion (arbno ";" identificador "=" expresion)  "}") registro-exp)
+
+    (expresion ("ref-vector" "(" expresion "," expresion ")") ref-vector-exp)
+    (expresion ("set-vector" "(" expresion "," expresion "," expresion ")") set-vector-exp)
 
     (expresion(predicado-primitivo "(" expresion "," expresion ")") pred-prim-exp)
     (expresion(operacion-booleana "(" expresion "," expresion ")") oper−bin−bool)
@@ -411,6 +420,22 @@
       (registro-exp (id exp ids exps)
                     exp
                     )
+
+      (ref-vector-exp (vec pos)
+                      (let ((vector (evaluar-expresion vec env))
+                            (posicion (evaluar-expresion pos env)))
+                        (vector-ref vector posicion))
+                      )
+
+      (set-vector-exp (vec pos val)
+                      (let ((vector (evaluar-expresion vec env))
+                            (posicion (evaluar-expresion pos env))
+                            (valor (evaluar-expresion val env))
+                            )
+                        (vector-set! vector posicion valor)
+                        vector
+                        )
+                      )
 
       (pred-prim-exp(prim exp1 exp2)
                     (let(
