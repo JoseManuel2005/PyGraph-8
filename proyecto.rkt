@@ -174,6 +174,8 @@
     (expresion ("ref-vector" "(" expresion "," expresion ")") ref-vector-exp)
     (expresion ("set-vector" "(" expresion "," expresion "," expresion ")") set-vector-exp)
 
+    (expresion ("while" "(" expresion ")" "do" expresion "end") while-exp)
+
     (expresion(predicado-primitivo "(" expresion "," expresion ")") pred-prim-exp)
     (expresion(operacion-booleana "(" expresion "," expresion ")") oper−bin−bool)
     (expresion(operacion-unaria-booleana "(" expresion ")") oper−un−bool)
@@ -436,6 +438,15 @@
                         vector
                         )
                       )
+
+      (while-exp(cond body)
+                (let ciclo()
+                  (if (valor-verdad? (evaluar-expresion cond env))
+                      (begin
+                        (evaluar-expresion body env)
+                        (ciclo))
+                      'listo))     
+                )
 
       (pred-prim-exp(prim exp1 exp2)
                     (let(
