@@ -46,6 +46,9 @@
 ;                ::= begin {<expresion>}+(;) end
 ;                   begin-exp (exp exps)
 
+;                ::= Si <expresion> entonces <expresion>  sino <expresion> 
+;                   condicional-exp (test-exp true-exp false-exp)
+
 ;                := (<expresion> <primitiva-binaria> <expresion>)
 ;                   primapp-bin-exp (exp1 prim-binaria exp2)
 
@@ -148,6 +151,7 @@
     (expresion ("const" "(" (separated-list identificador "=" expresion ",") ")" "{" expresion "}") variableNoMutable-exp)
     (expresion ("rec" (arbno identificador "(" (separated-list identificador ";") ")" "=" expresion) "en" expresion "finRec") rec-exp)
     (expresion ("begin" "{" expresion (arbno ";" expresion) "}" "end")  begin-exp)
+    (expresion ("si" expresion "entonces" expresion "sino" expresion) condicional-exp)
 
     (expresion ("false") false-exp)
     (expresion ("true") true-exp)
@@ -301,7 +305,7 @@
 ;valor-verdad?: determina si un valor dado corresponde a un valor booleano falso o verdadero
 (define valor-verdad?
   (lambda (x)
-    (not (zero? x))))
+    (equal? #t x)))
 
 ;datatype para los procedimientos
 (define-datatype procVal procVal?
@@ -364,6 +368,11 @@
                         (loop (evaluar-expresion (car exps) 
                                                env)
                               (cdr exps)))))
+      (condicional-exp (test-exp true-exp false-exp)
+                       (if (valor-verdad? (evaluar-expresion test-exp env))
+                           (evaluar-expresion true-exp env)
+                           (evaluar-expresion false-exp env)))
+
       (true-exp ()
                 #t)
       (false-exp ()
