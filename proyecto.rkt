@@ -43,6 +43,9 @@
 ;                ::= rec {<identificador> (<identificador>* (;)) = <expresion>}* en <expresion>
 ;                   rec-exp (proc-nombres idss exps cuerpodecrec)
 
+;                ::= begin {<expresion>}+(;) end
+;                   begin-exp (exp exps)
+
 ;                := (<expresion> <primitiva-binaria> <expresion>)
 ;                   primapp-bin-exp (exp1 prim-binaria exp2)
 
@@ -139,6 +142,7 @@
     (expresion ("var" "(" (separated-list identificador "=" expresion ",") ")" "{" expresion "}") variableMutable-exp)
     (expresion ("const" "(" (separated-list identificador "=" expresion ",") ")" "{" expresion "}") variableNoMutable-exp)
     (expresion ("rec" (arbno identificador "(" (separated-list identificador ";") ")" "=" expresion) "en" expresion "finRec") rec-exp)
+    (expresion ("begin" "{" expresion (arbno ";" expresion) "}" "end")  begin-exp)
 
     (expresion ("false") false-exp)
     (expresion ("true") true-exp)
@@ -340,6 +344,14 @@
                   (evaluar-expresion cuerpodecrec
                                    (extend-env-recursively
                                      proc-nombres idss exps env)))
+      (begin-exp (exp exps) 
+                 (let loop ((acc (evaluar-expresion exp env))
+                             (exps exps))
+                    (if (null? exps) 
+                        acc
+                        (loop (evaluar-expresion (car exps) 
+                                               env)
+                              (cdr exps)))))
       (true-exp ()
                 #t)
       (false-exp ()
