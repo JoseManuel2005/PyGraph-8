@@ -92,6 +92,11 @@
 ;                         := or (or-exp)
 
 ;    <operacion-unaria-booleana> := not(not-exp)
+;                                := zero? (zero-exp)
+;                                := vacio? (vacio-validacion-exp)
+;                                := lista? (lista-validacion-exp)
+;                                := cabeza (cabeza-validacion-exp)
+;                                := resto (resto-validacion-exp)
 
 ;******************************************************************************************
 
@@ -146,6 +151,7 @@
 
     (expresion ("false") false-exp)
     (expresion ("true") true-exp)
+    (expresion ("vacio") vacio-exp)
 
     (expresion ("(" expresion primitiva-binaria expresion ")") primapp-bin-exp)
     (expresion (primitiva-unaria "(" expresion ")") primapp-un-exp)
@@ -178,7 +184,13 @@
 
     (operacion-booleana("and") and-exp)
     (operacion-booleana("or") or-exp)
+    
     (operacion-unaria-booleana("not") not-exp)
+    (operacion-unaria-booleana ("zero?") zero-exp)
+    (operacion-unaria-booleana ("vacio?") vacio-validacion-exp)
+    (operacion-unaria-booleana ("lista?") lista-validacion-exp)
+    (operacion-unaria-booleana ("cabeza") cabeza-validacion-exp)
+    (operacion-unaria-booleana ("resto") resto-validacion-exp)
     ))
 
 ;datatypes con SLLGEN
@@ -356,6 +368,9 @@
                 #t)
       (false-exp ()
                  #f)
+      (vacio-exp ()
+                 '()
+                 )
 
       (primapp-bin-exp (exp1 prim-binaria exp2)
                        (let(
@@ -451,6 +466,11 @@
   (lambda(ope exp)
     (cases operacion-unaria-booleana ope
       (not-exp () (not exp))
+      (zero-exp() (zero? exp))
+      (vacio-validacion-exp() (null? exp))
+      (lista-validacion-exp() (list? exp))
+      (cabeza-validacion-exp() (car exp))
+      (resto-validacion-exp() (cdr exp))
       )))
 
 ; funciones auxiliares para aplicar evaluar-expresion a cada elemento de una lista de operandos (expresiones)
