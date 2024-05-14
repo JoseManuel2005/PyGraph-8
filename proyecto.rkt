@@ -159,6 +159,8 @@
     (expresion ("rec" (arbno identificador "(" (separated-list identificador ";") ")" "=" expresion) "en" expresion "finRec") rec-exp)
     (expresion ("begin" "{" expresion (arbno ";" expresion) "}" "end")  begin-exp)
     (expresion ("si" expresion "entonces" expresion "sino" expresion) condicional-exp)
+    (expresion ("procedimiento" "(" (separated-list identificador ",") ")" "{" expresion "}") procedimiento-exp)
+    (expresion ("evaluar" expresion "(" (separated-list expresion ",") ")" "finEval") app-exp)
 
     (expresion ("false") false-exp)
     (expresion ("true") true-exp)
@@ -174,7 +176,7 @@
     (expresion ("ref-vector" "(" expresion "," expresion ")") ref-vector-exp)
     (expresion ("set-vector" "(" expresion "," expresion "," expresion ")") set-vector-exp)
 
-    (expresion ("while" "(" expresion ")" "do" expresion "end") while-exp)
+    (expresion ("while" "(" expresion ")" "do" expresion "modificar" expresion "end") while-exp)
 
     (expresion(predicado-primitivo "(" expresion "," expresion ")") pred-prim-exp)
     (expresion(operacion-booleana "(" expresion "," expresion ")") oper−bin−bool)
@@ -332,6 +334,14 @@
    (exp expresion?)
    (amb ambiente?)))
 
+
+;apply-procedure: evalua el cuerpo de un procedimientos en el ambiente extendido correspondiente
+(define apply-procedure
+  (lambda (proc args)
+    (cases procVal proc
+      (cerradura (ids body env)
+               (evaluar-expresion body (extend-env ids args env))))))
+
 ;El Interpretador (FrontEnd + Evaluación + señal para lectura )
 (define interpretador
   (sllgen:make-rep-loop "--> "
@@ -390,6 +400,15 @@
                        (if (valor-verdad? (evaluar-expresion test-exp env))
                            (evaluar-expresion true-exp env)
                            (evaluar-expresion false-exp env)))
+      (procedimiento-exp (ids cuerpo)
+                         (cerradura ids cuerpo env))
+      (app-exp (exp exps)
+               (let ((proc (evaluar-expresion exp env))
+                     (args (evaluar-operandos exps env)))
+                 (if (procVal? proc)
+                     (apply-procedure proc args)
+                     (eopl:error 'eval-expression
+                                 "Attempt to apply non-procedure ~s" proc))))
 
       (true-exp ()
                 #t)
@@ -441,10 +460,11 @@
                         )
                       )
 
-      (while-exp(cond body)
+      (while-exp(cond body mod)
                 (let ciclo()
                   (if (valor-verdad? (evaluar-expresion cond env))
                       (begin
+                        (evaluar-expresion body env)
                         (evaluar-expresion body env)
                         (ciclo))
                       'listo))     
