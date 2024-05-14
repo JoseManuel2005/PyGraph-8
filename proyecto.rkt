@@ -180,6 +180,8 @@
     (expresion(operacion-booleana "(" expresion "," expresion ")") oper−bin−bool)
     (expresion(operacion-unaria-booleana "(" expresion ")") oper−un−bool)
 
+    (expresion ("print" "(" expresion ")") print-exp)
+
     (primitiva-binaria ("+") primitiva-suma)
     (primitiva-binaria ("~") primitiva-resta)
     (primitiva-binaria ("/") primitiva-div)
@@ -463,6 +465,13 @@
       (oper−un−bool(oper exp)
                    (evaluar-operacion-unaria-booleana oper (evaluar-expresion exp env))
                    )
+
+      (print-exp(exp)
+                (let(
+                     (expr(evaluar-expresion exp env))
+                     )
+                  expr)
+                )
       )))
 
 ;prim(primitiva-binaria) rand1(texto o numero) rand2(texto o numero) -> texto o numero
