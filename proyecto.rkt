@@ -470,7 +470,7 @@
                 (let(
                      (expr(evaluar-expresion exp env))
                      )
-                  expr)
+                  (display expr))
                 )
       )))
 
