@@ -1,7 +1,7 @@
 #lang eopl
 
 ;Proyecto del curso de FLP
-;URL del repositorio: 
+;URL del repositorio: https://github.com/JoseManuel2005/Proyecto-FLP
 
 ;Integrantes:
 ;Carlos Daniel Corrales Arango (2122878)
@@ -40,14 +40,23 @@
 ;                := const (<identificador> = <expresion> (,)) { <expresion> }
 ;                   variableNoMutable-exp (ids exps cuerpo)
 
-;                ::= rec {<identificador> (<identificador>* (;)) = <expresion>}* en <expresion>
-;                   rec-exp (proc-nombres idss exps cuerpodecrec)
+;                := rec {<identificador> (<identificador>* (;)) = <expresion>}* en <expresion>
+;                    rec-exp (proc-nombres idss exps cuerpodecrec)
 
-;                ::= begin {<expresion>}+(;) end
-;                   begin-exp (exp exps)
+;                := begin {<expresion>}+(;) end
+;                    begin-exp (exp exps)
 
-;                ::= Si <expresion> entonces <expresion>  sino <expresion> 
-;                   condicional-exp (test-exp true-exp false-exp)
+;                := set <identificador> = <expresion>
+;                    <set-exp (id rhsexp)>
+
+;                := Si <expresion> entonces <expresion>  sino <expresion> 
+;                    condicional-exp (test-exp true-exp false-exp)
+
+;                := procedimiento (<identificador>*',') { <expresion> }
+;                   procedimiento-exp (ids cuerpo)
+
+;                := evaluar expresion (expresion ",")* finEval
+;                   app-exp(exp exps)
 
 ;                := (<expresion> <primitiva-binaria> <expresion>)
 ;                   primapp-bin-exp (exp1 prim-binaria exp2)
@@ -79,6 +88,9 @@
 ;                := <operacion-unaria-booleana> (<expresion>)
 ;                := oper−un−bool (exp)
 
+;                := print ( <Expresion> )
+;                := print-exp (exp)
+
 ;    <primitiva-binaria> :=  + (primitiva-suma)
 ;                        :=  ~ (primitiva-resta)
 ;                        :=  / (primitiva-div)
@@ -107,6 +119,7 @@
 ;                                := lista? (lista-validacion-exp)
 ;                                := cabeza (cabeza-validacion-exp)
 ;                                := resto (resto-validacion-exp)
+;                                := vector? (vector-validacion-exp)
 
 ;******************************************************************************************
 
@@ -156,12 +169,16 @@
 
     (expresion ("var" "(" (separated-list identificador "=" expresion ",") ")" "{" expresion "}") variableMutable-exp)
     (expresion ("const" "(" (separated-list identificador "=" expresion ",") ")" "{" expresion "}") variableNoMutable-exp)
+
     (expresion ("rec" (arbno identificador "(" (separated-list identificador ";") ")" "=" expresion) "en" expresion "finRec") rec-exp)
+
     (expresion ("begin" "{" expresion (arbno ";" expresion) "}" "end")  begin-exp)
+    (expresion ("set" identificador "=" expresion)set-exp)
+    
     (expresion ("si" expresion "entonces" expresion "sino" expresion) condicional-exp)
     (expresion ("procedimiento" "(" (separated-list identificador ",") ")" "{" expresion "}") procedimiento-exp)
     (expresion ("evaluar" expresion "(" (separated-list expresion ",") ")" "finEval") app-exp)
-    (expresion ("set" identificador "=" expresion)set-exp)
+
 
     (expresion ("false") false-exp)
     (expresion ("true") true-exp)
@@ -455,6 +472,12 @@
                        (loop (evaluar-expresion (car exps) 
                                                 env)
                              (cdr exps)))))
+      (set-exp (id rhs-exp)
+               (begin
+                 (setref!
+                  (buscar-variable-ref env id)
+                  (evaluar-expresion rhs-exp env))
+                 'seteo-confirmado))
       (condicional-exp (test-exp true-exp false-exp)
                        (if (valor-verdad? (evaluar-expresion test-exp env))
                            (evaluar-expresion true-exp env)
@@ -468,12 +491,6 @@
                      (apply-procedure proc args)
                      (eopl:error 'eval-expression
                                  "Attempt to apply non-procedure ~s" proc))))
-      (set-exp (id rhs-exp)
-               (begin
-                 (setref!
-                  (buscar-variable-ref env id)
-                  (evaluar-expresion rhs-exp env))
-                 'seteo-confirmado))
 
       (true-exp ()
                 #t)
