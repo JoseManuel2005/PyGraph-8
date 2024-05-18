@@ -263,10 +263,6 @@
   (extended-env-record (syms (list-of symbol?))
                        (vec vector?)
                        (env ambiente?))
-  (recursively-extended-env-record (proc-names (list-of symbol?))
-                                   (idss (list-of (list-of symbol?)))
-                                   (bodies (list-of expresion?))
-                                   (env ambiente?))
   (extended-env-const (syms (list-of symbol?))
                       (val vector?)
                       (env ambiente?))
@@ -306,13 +302,6 @@
                              (if (number? pos)
                                  (a-ref pos vals)
                                  (buscar-variable-ref old-env sym))))
-      (recursively-extended-env-record (proc-names idss bodies old-env)
-                                       (let ((pos (list-find-position sym proc-names)))
-                                         (if (number? pos)
-                                             (cerradura (list-ref idss pos)
-                                                        (list-ref bodies pos)
-                                                        env)
-                                             (buscar-variable old-env sym))))
       (extended-env-const (syms vals env)
         (let ((pos (rib-find-position sym syms)))
           (if (number? pos)
@@ -325,8 +314,22 @@
 ;función que crea un ambiente extendido para procedimientos recursivos
 (define extend-env-recursively
   (lambda (proc-names idss bodies old-env)
-    (recursively-extended-env-record
-     proc-names idss bodies old-env)))
+    (let ((len (length proc-names)))
+      (let ((vec (make-vector len)))
+        (let ((env (extended-env-record proc-names vec old-env)))
+          (for-each
+            (lambda (pos ids body)
+              (vector-set! vec pos (cerradura ids body env)))
+            (iota len) idss bodies)
+          env)))))
+
+;iota: number -> list
+;función que retorna una lista de los números desde 0 hasta end
+(define iota
+  (lambda (end)
+    (let loop ((next 0))
+      (if (>= next end) '()
+        (cons next (loop (+ 1 next)))))))
 
 ;****************************************************************************************
 ;Funciones Auxiliares
