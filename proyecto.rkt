@@ -161,6 +161,7 @@
     (expresion ("si" expresion "entonces" expresion "sino" expresion) condicional-exp)
     (expresion ("procedimiento" "(" (separated-list identificador ",") ")" "{" expresion "}") procedimiento-exp)
     (expresion ("evaluar" expresion "(" (separated-list expresion ",") ")" "finEval") app-exp)
+    (expresion ("set" identificador "=" expresion)set-exp)
 
     (expresion ("false") false-exp)
     (expresion ("true") true-exp)
@@ -215,6 +216,8 @@
     (operacion-unaria-booleana ("vector?") vector-validacion-exp)
     ))
 
+;;;;;;;;;;;interpretador;;;;;;;;;;;;;;
+
 ;datatypes con SLLGEN
 (sllgen:make-define-datatypes spec-lexica spec-gramatica);crear datatypes
 
@@ -235,18 +238,21 @@
 
 ;**************************************************************
 
-;Ambientes -> auxiliares
+;Ambientes
 
 ;definición del tipo de dato ambiente
 (define-datatype ambiente ambiente?
   (empty-env-record)
   (extended-env-record (syms (list-of symbol?))
-                       (vals (list-of scheme-value?))
+                       (vec vector?)
                        (env ambiente?))
   (recursively-extended-env-record (proc-names (list-of symbol?))
                                    (idss (list-of (list-of symbol?)))
                                    (bodies (list-of expresion?))
                                    (env ambiente?))
+  (extended-env-const (syms (list-of symbol?))
+                      (val vector?)
+                      (env ambiente?))
   )
 
 (define scheme-value? (lambda (v) #t))
@@ -262,19 +268,27 @@
 ;función que crea un ambiente extendido
 (define extend-env
   (lambda (syms vals env)
-    (extended-env-record syms vals env)))
+    (extended-env-record syms (list->vector vals) env)))
+
+(define extend-env-const
+  (lambda (syms vals env)
+    (extended-env-const syms (list->vector vals) env)))
 
 ;función que busca una variable dado un ambiente, si no esta retorna error, si esta retorna el valor de la variable
 (define buscar-variable
+  (lambda (env sym)
+    (deref (buscar-variable-ref env sym))))
+
+(define buscar-variable-ref
   (lambda (env sym)
     (cases ambiente env
       (empty-env-record ()
                         (eopl:error 'buscar-variable "Error, la variable ~s no existe" sym))
       (extended-env-record (syms vals old-env)
-                           (let ((pos (list-find-position sym syms)))
+                           (let ((pos (rib-find-position sym syms)))
                              (if (number? pos)
-                                 (list-ref vals pos)
-                                 (buscar-variable old-env sym))))
+                                 (a-ref pos vals)
+                                 (buscar-variable-ref old-env sym))))
       (recursively-extended-env-record (proc-names idss bodies old-env)
                                        (let ((pos (list-find-position sym proc-names)))
                                          (if (number? pos)
@@ -282,6 +296,11 @@
                                                         (list-ref bodies pos)
                                                         env)
                                              (buscar-variable old-env sym))))
+      (extended-env-const (syms vals env)
+        (let ((pos (rib-find-position sym syms)))
+          (if (number? pos)
+              (a-const pos vals)
+              (buscar-variable-ref env sym))))
       )
     ))
 
@@ -298,6 +317,10 @@
 ; funciones auxiliares para encontrar la posición de un símbolo
 ; en la lista de símbolos de un ambiente
 
+(define rib-find-position 
+  (lambda (sym los)
+    (list-find-position sym los)))
+
 (define list-find-position
   (lambda (sym los)
     (list-index (lambda (sym1) (eqv? sym1 sym)) los)))
@@ -311,6 +334,42 @@
               (if (number? list-index-r)
                   (+ list-index-r 1)
                   #f))))))
+
+;*******************************************************************************************
+;Referencias
+
+(define-datatype reference reference?
+  (a-ref (position integer?)
+         (vec vector?))
+  (a-const (position integer?)
+           (vec vector?))
+  )
+
+(define deref
+  (lambda (ref)
+    (primitive-deref ref)))
+
+(define primitive-deref
+  (lambda (ref)
+    (cases reference ref
+      (a-ref (pos vec)
+             (vector-ref vec pos))
+      (a-const (pos vec)
+               (vector-ref vec pos))
+      )))
+
+(define setref!
+  (lambda (ref val)
+    (primitive-setref! ref val)))
+
+(define primitive-setref!
+  (lambda (ref val)
+    (cases reference ref
+      (a-ref (pos vec)
+             (vector-set! vec pos val))
+      (a-const (pos vec)
+        (eopl:error 'setref! "No se puede cambiar el valor de una constante"))
+      )))
 
 ;***************************************
 
@@ -382,7 +441,7 @@
       (variableNoMutable-exp (ids exps cuerpo)
                              (let ((args(evaluar-operandos exps env)))
                                (evaluar-expresion cuerpo
-                                                  (extend-env ids args env))
+                                                  (extend-env-const ids args env))
                                ))
       (rec-exp (proc-nombres idss exps cuerpodecrec)
                (evaluar-expresion cuerpodecrec
@@ -409,6 +468,12 @@
                      (apply-procedure proc args)
                      (eopl:error 'eval-expression
                                  "Attempt to apply non-procedure ~s" proc))))
+      (set-exp (id rhs-exp)
+               (begin
+                 (setref!
+                  (buscar-variable-ref env id)
+                  (evaluar-expresion rhs-exp env))
+                 'seteo-confirmado))
 
       (true-exp ()
                 #t)
@@ -459,16 +524,7 @@
                         vector
                         )
                       )
-
-      ;;       (while-exp(cond body mod)
-      ;;                 (let ciclo()
-      ;;                   (if (valor-verdad? (evaluar-expresion cond env))
-      ;;                       (begin
-      ;;                         (evaluar-expresion body env)
-      ;;                         (evaluar-expresion body env)
-      ;;                         (ciclo))
-      ;;                       'listo))     
-      ;;                 )
+      
       (while-exp (test-exp body) 
                  (let loop ((condicion test-exp)
                             (expr body))
