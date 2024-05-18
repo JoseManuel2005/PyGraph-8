@@ -113,35 +113,35 @@
 ;Especificación Léxica
 
 (define spec-lexica
-'((white-sp
-   (whitespace) skip)
+  '((white-sp
+     (whitespace) skip)
   
-  (comentario
-   ("//" (arbno (not #\newline))) skip)
+    (comentario
+     ("//" (arbno (not #\newline))) skip)
 
-  (identificador
-   ("@" letter (arbno (or letter digit "?"))) symbol)
+    (identificador
+     ("@" letter (arbno (or letter digit "?"))) symbol)
   
-  (texto
-   ((or letter "-") (arbno (or letter digit "-" ":" "?"))) string)
+    (texto
+     ((or letter "-") (arbno (or letter digit "-" ":" "?"))) string)
 
-  (caracter
-    ("'" letter) symbol)
+    (caracter
+     ("'" letter) symbol)
   
-  (numero
-   (digit (arbno digit)) number)
+    (numero
+     (digit (arbno digit)) number)
   
-  (numero
-   ("-" digit (arbno digit)) number)
+    (numero
+     ("-" digit (arbno digit)) number)
 
-  (numero
-   (digit (arbno digit) "." (arbno digit)) number)
+    (numero
+     (digit (arbno digit) "." (arbno digit)) number)
 
-  (numero
-   ("-" digit (arbno digit) "." (arbno digit)) number)
+    (numero
+     ("-" digit (arbno digit) "." (arbno digit)) number)
 
+    )
   )
-)
 
 ;Especificación Sintáctica (gramática)
 
@@ -176,7 +176,7 @@
     (expresion ("ref-vector" "(" expresion "," expresion ")") ref-vector-exp)
     (expresion ("set-vector" "(" expresion "," expresion "," expresion ")") set-vector-exp)
 
-    (expresion ("while" "(" expresion ")" "do" expresion "modificar" expresion "end") while-exp)
+    (expresion ("while" "(" expresion ")" "do" expresion "end") while-exp)
 
     (expresion(predicado-primitivo "(" expresion "," expresion ")") pred-prim-exp)
     (expresion(operacion-booleana "(" expresion "," expresion ")") oper−bin−bool)
@@ -279,8 +279,8 @@
                                        (let ((pos (list-find-position sym proc-names)))
                                          (if (number? pos)
                                              (cerradura (list-ref idss pos)
-                                                      (list-ref bodies pos)
-                                                      env)
+                                                        (list-ref bodies pos)
+                                                        env)
                                              (buscar-variable old-env sym))))
       )
     ))
@@ -309,8 +309,8 @@
       ((pred (car ls)) 0)
       (else (let ((list-index-r (list-index pred (cdr ls))))
               (if (number? list-index-r)
-                (+ list-index-r 1)
-                #f))))))
+                  (+ list-index-r 1)
+                  #f))))))
 
 ;***************************************
 
@@ -318,12 +318,12 @@
 (define init-env
   (extend-env '(@a @b @c @d @e)
               '(1 2 3 "hola" "FLP")
-  (empty-env)))
+              (empty-env)))
 
 ;valor-verdad?: determina si un valor dado corresponde a un valor booleano falso o verdadero
 (define valor-verdad?
   (lambda (x)
-     (equal? (not #f) x) 
+    (equal? (not #f) x) 
     )
   )
 
@@ -340,15 +340,15 @@
   (lambda (proc args)
     (cases procVal proc
       (cerradura (ids body env)
-               (evaluar-expresion body (extend-env ids args env))))))
+                 (evaluar-expresion body (extend-env ids args env))))))
 
 ;El Interpretador (FrontEnd + Evaluación + señal para lectura )
 (define interpretador
   (sllgen:make-rep-loop "--> "
-    (lambda (pgm) (evaluar-programa  pgm))
-    (sllgen:make-stream-parser 
-      spec-lexica
-      spec-gramatica)))
+                        (lambda (pgm) (evaluar-programa  pgm))
+                        (sllgen:make-stream-parser 
+                         spec-lexica
+                         spec-gramatica)))
 
 ;********************************
 
@@ -375,27 +375,27 @@
       (texto-lit (text) text)
       (caracter-lit (car) car)
       (variableMutable-exp (ids exps cuerpo)
-                         (let ((args(evaluar-operandos exps env)))
-                           (evaluar-expresion cuerpo
-                                  (extend-env ids args env))
-                         ))
+                           (let ((args(evaluar-operandos exps env)))
+                             (evaluar-expresion cuerpo
+                                                (extend-env ids args env))
+                             ))
       (variableNoMutable-exp (ids exps cuerpo)
-                         (let ((args(evaluar-operandos exps env)))
-                           (evaluar-expresion cuerpo
-                                  (extend-env ids args env))
-                         ))
+                             (let ((args(evaluar-operandos exps env)))
+                               (evaluar-expresion cuerpo
+                                                  (extend-env ids args env))
+                               ))
       (rec-exp (proc-nombres idss exps cuerpodecrec)
-                  (evaluar-expresion cuerpodecrec
-                                   (extend-env-recursively
-                                     proc-nombres idss exps env)))
+               (evaluar-expresion cuerpodecrec
+                                  (extend-env-recursively
+                                   proc-nombres idss exps env)))
       (begin-exp (exp exps) 
                  (let loop ((acc (evaluar-expresion exp env))
-                             (exps exps))
-                    (if (null? exps) 
-                        acc
-                        (loop (evaluar-expresion (car exps) 
-                                               env)
-                              (cdr exps)))))
+                            (exps exps))
+                   (if (null? exps) 
+                       acc
+                       (loop (evaluar-expresion (car exps) 
+                                                env)
+                             (cdr exps)))))
       (condicional-exp (test-exp true-exp false-exp)
                        (if (valor-verdad? (evaluar-expresion test-exp env))
                            (evaluar-expresion true-exp env)
@@ -429,16 +429,16 @@
                       (let (
                             (arg (evaluar-expresion exp env))
                             )
-                           (evaluar-primitiva-unaria  prim-unaria arg)
-                           ))
+                        (evaluar-primitiva-unaria  prim-unaria arg)
+                        ))
 
       (lista-exp (exp)
                  (map(lambda(expr) (evaluar-expresion expr env)) exp)
                  )
 
       (vector-exp (exp)
-                 (list->vector(map(lambda(expr) (evaluar-expresion expr env)) exp))
-                 )
+                  (list->vector(map(lambda(expr) (evaluar-expresion expr env)) exp))
+                  )
 
       (registro-exp (id exp ids exps)
                     exp
@@ -460,23 +460,31 @@
                         )
                       )
 
-      (while-exp(cond body mod)
-                (let ciclo()
-                  (if (valor-verdad? (evaluar-expresion cond env))
-                      (begin
-                        (evaluar-expresion body env)
-                        (evaluar-expresion body env)
-                        (ciclo))
-                      'listo))     
-                )
+      ;;       (while-exp(cond body mod)
+      ;;                 (let ciclo()
+      ;;                   (if (valor-verdad? (evaluar-expresion cond env))
+      ;;                       (begin
+      ;;                         (evaluar-expresion body env)
+      ;;                         (evaluar-expresion body env)
+      ;;                         (ciclo))
+      ;;                       'listo))     
+      ;;                 )
+      (while-exp (test-exp body) 
+                 (let loop ((condicion test-exp)
+                            (expr body))
+                   (if (evaluar-expresion condicion env) 
+                       (loop condicion (evaluar-expresion body env))
+                       'listo)
+                   )
+                 )
 
       (pred-prim-exp(prim exp1 exp2)
                     (let(
                          (expr1 (evaluar-expresion exp1 env))
                          (expr2 (evaluar-expresion exp2 env))
                          )
-                        (evaluar-predicado-primitivo prim expr1 expr2)
-                         ))
+                      (evaluar-predicado-primitivo prim expr1 expr2)
+                      ))
 
       (oper−bin−bool(operacion exp1 exp2)
                     (evaluar-operacion-booleana operacion (evaluar-expresion exp1 env) (evaluar-expresion exp2 env))
