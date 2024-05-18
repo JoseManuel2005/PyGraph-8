@@ -571,7 +571,9 @@
                 (let(
                      (expr(evaluar-expresion exp env))
                      )
-                  (display expr))
+                  (display expr)
+                  (newline)
+                  )
                 )
       )))
 
